@@ -66,12 +66,9 @@
         const newUsernameInput = document.getElementById('new-username');
         const newPasswordInput = document.getElementById('new-password');
         const loadingMessage = document.getElementById('loading-message'); 
-        const createSectionForm = document.getElementById('create-section-form');
-        const sectionNameInput = document.getElementById('section-name');
-        const sectionDescriptionInput = document.getElementById('section-description');
-        const sectionImageInput = document.getElementById('section-image');
         const adminSectionsList = document.getElementById('admin-sections-list');
         const userSectionsList = document.getElementById('user-sections-list');
+        const createSectionButton = document.getElementById('create-section-button');
         
         // Modales y sus elementos
         const userConfirmModal = document.getElementById('user-confirm-modal');
@@ -98,6 +95,15 @@
         const editContentTypeSelect = document.getElementById('edit-content-type');
         const editContentTitleInput = document.getElementById('edit-content-title');
         const editContentUrlInput = document.getElementById('edit-content-url');
+
+        // Nuevo Modal para Secciones
+        const sectionModal = document.getElementById('section-modal');
+        const sectionModalTitle = document.getElementById('section-modal-title');
+        const sectionForm = document.getElementById('section-form');
+        const sectionNameInput = document.getElementById('section-name');
+        const sectionDescriptionInput = document.getElementById('section-description');
+        const sectionImageInput = document.getElementById('section-image');
+        const closeSectionModalBtn = document.getElementById('close-section-modal');
         
         let currentUser = null;
         let USERS = {};
@@ -191,7 +197,7 @@
                 div.className = 'card bg-white rounded-2xl shadow-lg overflow-hidden flex flex-col md:flex-row';
                 div.innerHTML = `
                     <div class="md:w-1/3">
-                        <img src="${data.imageUrl}" alt="Imagen de la sección ${data.name}" class="w-full h-48 md:h-full object-cover">
+                        <img src="${data.imageUrl}" alt="Imagen de la sección ${data.name}" class="w-full h-48 md:h-full object-cover" onerror="this.src='https://placehold.co/400x250/E5E7EB/4B5563?text=Sin+Imagen'; this.onerror=null;">
                     </div>
                     <div class="p-4 md:w-2/3 flex flex-col justify-between">
                         <div>
@@ -223,13 +229,7 @@
                     const sectionRef = doc(db, `/artifacts/${appId}/public/data/sections`, sectionId);
                     const sectionDoc = await getDoc(sectionRef);
                     if (sectionDoc.exists()) {
-                        const data = sectionDoc.data();
-                        sectionNameInput.value = data.name;
-                        sectionDescriptionInput.value = data.description;
-                        sectionImageInput.value = data.imageUrl;
-                        createSectionForm.dataset.mode = 'edit';
-                        createSectionForm.dataset.docId = sectionId;
-                        document.querySelector('#create-section-form button[type="submit"]').textContent = 'Guardar Cambios';
+                        showSectionModal(sectionDoc.data(), sectionId);
                     }
                 });
             });
@@ -250,7 +250,7 @@
                 const div = document.createElement('div');
                 div.className = 'card bg-white rounded-2xl shadow-lg overflow-hidden cursor-pointer hover:shadow-2xl transition-shadow';
                 div.innerHTML = `
-                    <img src="${data.imageUrl}" alt="Imagen de la sección ${data.name}" class="w-full h-48 object-cover">
+                    <img src="${data.imageUrl}" alt="Imagen de la sección ${data.name}" class="w-full h-48 object-cover" onerror="this.src='https://placehold.co/400x250/E5E7EB/4B5563?text=Sin+Imagen'; this.onerror=null;">
                     <div class="p-4">
                         <h3 class="text-xl font-bold text-gray-800">${data.name}</h3>
                         <p class="text-gray-600 mt-1">${data.description}</p>
@@ -328,36 +328,49 @@
             }
         });
 
-        createSectionForm.addEventListener('submit', async (e) => {
+        // Sección Formulario y Modal
+        createSectionButton.addEventListener('click', () => showSectionModal());
+
+        closeSectionModalBtn.addEventListener('click', () => sectionModal.classList.add('hidden'));
+
+        function showSectionModal(sectionData = null, docId = null) {
+            sectionForm.reset();
+            if (sectionData && docId) {
+                sectionModalTitle.textContent = 'Editar Sección';
+                sectionNameInput.value = sectionData.name;
+                sectionDescriptionInput.value = sectionData.description;
+                sectionImageInput.value = sectionData.imageUrl;
+                sectionForm.dataset.docId = docId;
+            } else {
+                sectionModalTitle.textContent = 'Crear Nueva Sección';
+                sectionForm.dataset.docId = '';
+            }
+            sectionModal.classList.remove('hidden');
+        }
+
+        sectionForm.addEventListener('submit', async (e) => {
             e.preventDefault();
+            const docId = sectionForm.dataset.docId;
             const name = sectionNameInput.value;
             const description = sectionDescriptionInput.value;
             const imageUrl = sectionImageInput.value;
-            const mode = createSectionForm.dataset.mode;
-            const docId = createSectionForm.dataset.docId;
 
-            if (name && description && imageUrl) {
-                try {
-                    if (mode === 'edit' && docId) {
-                        const sectionRef = doc(db, `/artifacts/${appId}/public/data/sections`, docId);
-                        await updateDoc(sectionRef, { name, description, imageUrl });
-                    } else {
-                        await addDoc(collection(db, `/artifacts/${appId}/public/data/sections`), {
-                            name: name,
-                            description: description,
-                            imageUrl: imageUrl,
-                            contentItems: []
-                        });
-                    }
-                    sectionNameInput.value = '';
-                    sectionDescriptionInput.value = '';
-                    sectionImageInput.value = '';
-                    createSectionForm.dataset.mode = 'add';
-                    createSectionForm.dataset.docId = '';
-                    document.querySelector('#create-section-form button[type="submit"]').textContent = 'Crear Sección';
-                } catch (e) {
-                    console.error("Error creating/updating section: ", e);
+            try {
+                if (docId) {
+                    const sectionRef = doc(db, `/artifacts/${appId}/public/data/sections`, docId);
+                    await updateDoc(sectionRef, { name, description, imageUrl });
+                } else {
+                    await addDoc(collection(db, `/artifacts/${appId}/public/data/sections`), {
+                        name: name,
+                        description: description,
+                        imageUrl: imageUrl,
+                        contentItems: []
+                    });
                 }
+                sectionModal.classList.add('hidden');
+                sectionForm.reset();
+            } catch (e) {
+                console.error("Error creating/updating section: ", e);
             }
         });
         
@@ -620,22 +633,9 @@
         <section id="admin-section" class="flex-grow space-y-8 hidden">
             <div class="card p-6">
                 <h2 class="text-xl font-semibold text-gray-800 border-b-2 border-red-300 pb-2 mb-4">Administrar Secciones</h2>
-                <form id="create-section-form" class="bg-gray-50 p-6 rounded-lg shadow-inner space-y-4" data-mode="add">
-                    <h3 class="text-lg font-bold">Crear Nueva Sección</h3>
-                    <div>
-                        <label for="section-name" class="block text-gray-700 text-sm">Nombre de la Sección:</label>
-                        <input type="text" id="section-name" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm px-3 py-2">
-                    </div>
-                    <div>
-                        <label for="section-description" class="block text-gray-700 text-sm">Descripción:</label>
-                        <textarea id="section-description" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm px-3 py-2"></textarea>
-                    </div>
-                    <div>
-                        <label for="section-image" class="block text-gray-700 text-sm">URL de Imagen de Portada:</label>
-                        <input type="url" id="section-image" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm px-3 py-2">
-                    </div>
-                    <button type="submit" class="w-full bg-red-600 text-white py-2 rounded-full hover:bg-red-700 transition-colors">Crear Sección</button>
-                </form>
+                <div class="flex justify-center mb-6">
+                    <button id="create-section-button" class="bg-red-600 text-white py-2 px-6 rounded-full hover:bg-red-700 transition-colors">Crear Nueva Sección</button>
+                </div>
             </div>
             
             <div class="card p-6">
@@ -712,6 +712,35 @@
         </div>
     </div>
     
+    <!-- Modal para agregar/editar sección -->
+    <div id="section-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50 flex items-center justify-center p-4">
+        <div class="w-full max-w-lg modal-content p-6 bg-white text-left">
+            <div class="flex justify-between items-center pb-4 mb-4 border-b">
+                <h3 id="section-modal-title" class="text-xl font-bold text-gray-900">Crear Nueva Sección</h3>
+                <button id="close-section-modal" class="bg-gray-200 text-gray-600 p-2 rounded-full hover:bg-gray-300">
+                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+            <form id="section-form" class="space-y-4">
+                <div>
+                    <label for="section-name" class="block text-gray-700 text-sm">Nombre de la Sección:</label>
+                    <input type="text" id="section-name" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm px-3 py-2">
+                </div>
+                <div>
+                    <label for="section-description" class="block text-gray-700 text-sm">Descripción:</label>
+                    <textarea id="section-description" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm px-3 py-2"></textarea>
+                </div>
+                <div>
+                    <label for="section-image" class="block text-gray-700 text-sm">URL de Imagen de Portada:</label>
+                    <input type="url" id="section-image" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm px-3 py-2">
+                </div>
+                <button type="submit" class="w-full bg-red-600 text-white py-2 rounded-full hover:bg-red-700 transition-colors">Guardar Sección</button>
+            </form>
+        </div>
+    </div>
+
     <!-- Modal para agregar contenido a una sección -->
     <div id="add-content-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50 flex items-center justify-center p-4">
         <div class="w-full max-w-lg modal-content p-6 bg-white text-left">
