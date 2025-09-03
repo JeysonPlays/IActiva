@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Futuros Digitales - Acceso</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, doc, getDoc, setDoc, deleteDoc, getDocs, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        
+        // ** CONFIGURACIÓN DE FIREBASE **
+        const firebaseConfig = {
+            apiKey: "AIzaSyDXN9skzZEOUdgihO1r8ls8IU-xVeiK1Ds",
+            authDomain: "ia-aprendo.firebaseapp.com",
+            projectId: "ia-aprendo",
+            storageBucket: "ia-aprendo.appspot.com",
+            messagingSenderId: "575207650469",
+            appId: "1:575207650469:web:63e421d47c480f1e90894c",
+            measurementId: "G-FVTZZRF8WZ"
+        };
+        const appId = "ia-aprendo";
+
+        // Inicializa Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        setLogLevel('debug'); // Habilitar logs para depuración
+
+        // Elementos de la UI
+        const loginScreen = document.getElementById('login-screen');
+        const mainScreen = document.getElementById('main-screen');
+        const usernameInput = document.getElementById('username');
+        const passwordInput = document.getElementById('password');
+        const loginButton = document.getElementById('login-button');
+        const errorMessage = document.getElementById('error-message');
+        const userGreeting = document.getElementById('user-greeting');
+        const adminSection = document.getElementById('admin-section');
+        const userSection = document.getElementById('user-section');
+        const logoutButton = document.getElementById('logout-button');
+        const userAdminButton = document.getElementById('user-admin-button');
+        const userAdminModal = document.getElementById('user-admin-modal');
+        const closeModalButton = document.getElementById('close-modal-button');
+        const userList = document.getElementById('user-list');
+        const createUserForm = document.getElementById('create-user-form');
+        const newUsernameInput = document.getElementById('new-username');
+        const newPasswordInput = document.getElementById('new-password');
+        const loadingMessage = document.getElementById('loading-message'); 
+        const userIdDisplay = document.getElementById('user-id-display');
+        const createSectionForm = document.getElementById('create-section-form');
+        const sectionNameInput = document.getElementById('section-name');
+        const sectionDescriptionInput = document.getElementById('section-description');
+        const sectionImageInput = document.getElementById('section-image');
+        const adminSectionsList = document.getElementById('admin-sections-list');
+        const userSectionsList = document.getElementById('user-sections-list');
+        
+        // Modales y sus elementos
+        const userConfirmModal = document.getElementById('user-confirm-modal');
+        const userConfirmMessage = document.getElementById('user-confirm-message');
+        const userConfirmYes = document.getElementById('user-confirm-yes');
+        const userConfirmNo = document.getElementById('user-confirm-no');
+        const userPasswordModal = document.getElementById('user-password-modal');
+        const newPasswordModalInput = document.getElementById('new-password-modal-input');
+        const savePasswordButton = document.getElementById('save-password-button');
+        const closePasswordModal = document.getElementById('close-password-modal');
+        const addContentModal = document.getElementById('add-content-modal');
+        const closeContentModal = document.getElementById('close-content-modal');
+        const addContentForm = document.getElementById('add-content-form');
+        const contentTypeSelect = document.getElementById('content-type');
+        const contentTitleInput = document.getElementById('content-title');
+        const contentUrlInput = document.getElementById('content-url');
+        const sectionContentList = document.getElementById('section-content-list');
+        const viewSectionModal = document.getElementById('view-section-modal');
+        const closeViewSectionModal = document.getElementById('close-view-section-modal');
+        const viewSectionContent = document.getElementById('view-section-content');
+        const editContentModal = document.getElementById('edit-content-modal');
+        const closeEditContentModal = document.getElementById('close-edit-content-modal');
+        const editContentForm = document.getElementById('edit-content-form');
+        const editContentTypeSelect = document.getElementById('edit-content-type');
+        const editContentTitleInput = document.getElementById('edit-content-title');
+        const editContentUrlInput = document.getElementById('edit-content-url');
+        
+        let currentUser = null;
+        let USERS = {};
+        let isAuthReady = false;
+        let pendingUserAction = null;
+
+        // Maneja el estado de la autenticación
+        onAuthStateChanged(auth, async (user) => {
+            console.log("Authentication state changed:", user);
+            if (user) {
+                loadingMessage.textContent = 'Conectando a la base de datos...';
+                isAuthReady = true;
+                userIdDisplay.textContent = `ID de usuario: ${user.uid}`;
+                await createInitialUsers();
+
+                const usersCollection = collection(db, `/artifacts/${appId}/public/data/users`);
+                onSnapshot(usersCollection, (snapshot) => {
+                    console.log("Users snapshot received.");
+                    loadingMessage.textContent = 'Cargando usuarios...';
+                    USERS = {};
+                    snapshot.forEach((doc) => {
+                        const data = doc.data();
+                        USERS[data.username] = { ...data, id: doc.id };
+                    });
+                    
+                    loginButton.disabled = false;
+                    loadingMessage.classList.add('hidden');
+
+                    if (currentUser && currentUser.role === 'admin') {
+                        renderUserList();
+                    }
+                });
+                
+                // Lógica de Firestore para las secciones
+                const sectionsCollection = collection(db, `/artifacts/${appId}/public/data/sections`);
+                onSnapshot(sectionsCollection, (snapshot) => {
+                    console.log("Sections snapshot received.");
+                    if (currentUser && currentUser.role === 'admin') {
+                        renderAdminSections(snapshot.docs);
+                    } else if (currentUser && currentUser.role === 'user') {
+                        renderUserSections(snapshot.docs);
+                    }
+                });
+            } else {
+                isAuthReady = false;
+                showLoginScreen();
+            }
+        });
+        
+        async function authenticate() {
+            try {
+                await signInAnonymously(auth);
+            } catch (error) {
+                console.error("Error signing in:", error);
+            }
+        }
+
+        function showLoginScreen() {
+            loginScreen.classList.remove('hidden');
+            mainScreen.classList.add('hidden');
+            usernameInput.value = '';
+            passwordInput.value = '';
+            errorMessage.classList.add('hidden');
+            loginButton.disabled = true;
+            loadingMessage.classList.remove('hidden');
+            loadingMessage.textContent = 'Cargando...';
+        }
+
+        function showMainScreen(user) {
+            currentUser = user;
+            loginScreen.classList.add('hidden');
+            mainScreen.classList.remove('hidden');
+            userGreeting.textContent = `Bienvenido, ${user.username}`;
+            
+            if (user.role === 'admin') {
+                adminSection.classList.remove('hidden');
+                userSection.classList.add('hidden');
+                userAdminButton.classList.remove('hidden');
+            } else {
+                adminSection.classList.add('hidden');
+                userSection.classList.remove('hidden');
+                userAdminButton.classList.add('hidden');
+            }
+        }
+        
+        function renderAdminSections(docs) {
+            adminSectionsList.innerHTML = '';
+            docs.forEach((sectionDoc) => {
+                const data = sectionDoc.data();
+                const div = document.createElement('div');
+                div.className = 'bg-white rounded-lg shadow-md overflow-hidden flex flex-col md:flex-row';
+                div.innerHTML = `
+                    <div class="md:w-1/3">
+                        <img src="${data.imageUrl}" alt="Imagen de la sección ${data.name}" class="w-full h-48 md:h-full object-cover">
+                    </div>
+                    <div class="p-4 md:w-2/3 flex flex-col justify-between">
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-800">${data.name}</h3>
+                            <p class="text-gray-600 mt-1">${data.description}</p>
+                        </div>
+                        <div class="mt-4 flex flex-wrap gap-2">
+                            <button data-id="${sectionDoc.id}" class="add-content-btn bg-blue-500 text-white px-3 py-1 rounded-md text-sm hover:bg-blue-600 transition-colors">Agregar Contenido</button>
+                            <button data-id="${sectionDoc.id}" class="edit-section-btn bg-yellow-500 text-white px-3 py-1 rounded-md text-sm hover:bg-yellow-600 transition-colors">Editar</button>
+                            <button data-id="${sectionDoc.id}" class="delete-section-btn bg-red-500 text-white px-3 py-1 rounded-md text-sm hover:bg-red-600 transition-colors">Eliminar</button>
+                        </div>
+                    </div>
+                `;
+                adminSectionsList.appendChild(div);
+            });
+
+            document.querySelectorAll('.add-content-btn').forEach(button => {
+                button.addEventListener('click', () => {
+                    const sectionId = button.dataset.id;
+                    addContentModal.dataset.sectionId = sectionId;
+                    renderSectionContentList(sectionId);
+                    addContentModal.classList.remove('hidden');
+                });
+            });
+            
+            document.querySelectorAll('.edit-section-btn').forEach(button => {
+                button.addEventListener('click', async () => {
+                    const sectionId = button.dataset.id;
+                    const sectionRef = doc(db, `/artifacts/${appId}/public/data/sections`, sectionId);
+                    const sectionDoc = await getDoc(sectionRef);
+                    if (sectionDoc.exists()) {
+                        const data = sectionDoc.data();
+                        sectionNameInput.value = data.name;
+                        sectionDescriptionInput.value = data.description;
+                        sectionImageInput.value = data.imageUrl;
+                        createSectionForm.dataset.mode = 'edit';
+                        createSectionForm.dataset.docId = sectionId;
+                        document.querySelector('#create-section-form button[type="submit"]').textContent = 'Guardar Cambios';
+                    }
+                });
+            });
+
+            document.querySelectorAll('.delete-section-btn').forEach(button => {
+                button.addEventListener('click', async () => {
+                    const sectionId = button.dataset.id;
+                    const sectionRef = doc(db, `/artifacts/${appId}/public/data/sections`, sectionId);
+                    await deleteDoc(sectionRef);
+                });
+            });
+        }
+        
+        function renderUserSections(docs) {
+            userSectionsList.innerHTML = '';
+            docs.forEach((sectionDoc) => {
+                const data = sectionDoc.data();
+                const div = document.createElement('div');
+                div.className = 'bg-white rounded-lg shadow-md overflow-hidden cursor-pointer hover:shadow-xl transition-shadow';
+                div.innerHTML = `
+                    <img src="${data.imageUrl}" alt="Imagen de la sección ${data.name}" class="w-full h-48 object-cover">
+                    <div class="p-4">
+                        <h3 class="text-xl font-bold text-gray-800">${data.name}</h3>
+                        <p class="text-gray-600 mt-1">${data.description}</p>
+                    </div>
+                `;
+                div.addEventListener('click', () => {
+                    renderViewSectionContent(data.name, data.contentItems);
+                    viewSectionModal.classList.remove('hidden');
+                });
+                userSectionsList.appendChild(div);
+            });
+        }
+
+        function renderViewSectionContent(sectionName, contentItems) {
+            viewSectionContent.innerHTML = '';
+            const title = document.createElement('h3');
+            title.className = 'text-2xl font-bold text-center text-blue-700 mb-4';
+            title.textContent = sectionName;
+            viewSectionContent.appendChild(title);
+            
+            if (contentItems && contentItems.length > 0) {
+                contentItems.forEach(item => {
+                    const itemDiv = document.createElement('div');
+                    itemDiv.className = 'p-4 border-b border-gray-200 last:border-b-0';
+                    itemDiv.innerHTML = `
+                        <h4 class="text-lg font-semibold">${item.title}</h4>
+                        <a href="${item.url}" target="_blank" class="text-blue-500 hover:underline break-words">${item.url}</a>
+                    `;
+                    viewSectionContent.appendChild(itemDiv);
+                });
+            } else {
+                viewSectionContent.innerHTML += `<p class="text-center text-gray-500 mt-4">No hay contenido en esta sección todavía.</p>`;
+            }
+        }
+        
+        closeViewSectionModal.addEventListener('click', () => {
+            viewSectionModal.classList.add('hidden');
+        });
+
+        loginButton.addEventListener('click', () => {
+            const username = usernameInput.value.toLowerCase();
+            const password = passwordInput.value;
+            
+            const user = USERS[username];
+
+            if (user && user.password === password) {
+                currentUser = user;
+                showMainScreen(user);
+                
+                const sectionsCollection = collection(db, `/artifacts/${appId}/public/data/sections`);
+                onSnapshot(sectionsCollection, (snapshot) => {
+                    if (currentUser.role === 'admin') {
+                        renderAdminSections(snapshot.docs);
+                    } else {
+                        renderUserSections(snapshot.docs);
+                    }
+                });
+            } else {
+                errorMessage.textContent = 'Usuario o contraseña incorrectos.';
+                errorMessage.classList.remove('hidden');
+            }
+        });
+
+        logoutButton.addEventListener('click', () => {
+            currentUser = null;
+            showLoginScreen();
+        });
+
+        createSectionForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = sectionNameInput.value;
+            const description = sectionDescriptionInput.value;
+            const imageUrl = sectionImageInput.value;
+            const mode = createSectionForm.dataset.mode;
+            const docId = createSectionForm.dataset.docId;
+
+            if (name && description && imageUrl) {
+                try {
+                    if (mode === 'edit' && docId) {
+                        const sectionRef = doc(db, `/artifacts/${appId}/public/data/sections`, docId);
+                        await updateDoc(sectionRef, { name, description, imageUrl });
+                    } else {
+                        await addDoc(collection(db, `/artifacts/${appId}/public/data/sections`), {
+                            name: name,
+                            description: description,
+                            imageUrl: imageUrl,
+                            contentItems: []
+                        });
+                    }
+                    sectionNameInput.value = '';
+                    sectionDescriptionInput.value = '';
+                    sectionImageInput.value = '';
+                    createSectionForm.dataset.mode = 'add';
+                    createSectionForm.dataset.docId = '';
+                    document.querySelector('#create-section-form button[type="submit"]').textContent = 'Crear Sección';
+                } catch (e) {
+                    console.error("Error creating/updating section: ", e);
+                }
+            }
+        });
+        
+        addContentForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const sectionId = addContentModal.dataset.sectionId;
+            const type = contentTypeSelect.value;
+            const title = contentTitleInput.value;
+            const url = contentUrlInput.value;
+
+            if (sectionId && type && title && url) {
+                try {
+                    const sectionRef = doc(db, `/artifacts/${appId}/public/data/sections`, sectionId);
+                    const sectionDoc = await getDoc(sectionRef);
+                    const currentItems = sectionDoc.data().contentItems || [];
+                    
+                    const newItems = [...currentItems, { type, title, url }];
+                    await updateDoc(sectionRef, { contentItems: newItems });
+
+                    contentTypeSelect.value = 'video';
+                    contentTitleInput.value = '';
+                    contentUrlInput.value = '';
+                    renderSectionContentList(sectionId);
+                } catch (e) {
+                    console.error("Error adding content: ", e);
+                }
+            }
+        });
+
+        async function renderSectionContentList(sectionId) {
+            sectionContentList.innerHTML = '';
+            const sectionRef = doc(db, `/artifacts/${appId}/public/data/sections`, sectionId);
+            const sectionDoc = await getDoc(sectionRef);
+            const contentItems = sectionDoc.data().contentItems || [];
+            
+            if (contentItems.length > 0) {
+                contentItems.forEach((item, index) => {
+                    const li = document.createElement('li');
+                    li.className = 'flex justify-between items-center bg-gray-100 p-2 rounded-md shadow-sm';
+                    li.innerHTML = `
+                        <span>${item.title} (${item.type})</span>
+                        <div class="flex space-x-2">
+                            <button class="edit-content-btn bg-yellow-500 text-white px-2 py-1 rounded-md text-sm hover:bg-yellow-600 transition-colors" data-index="${index}">Editar</button>
+                            <button class="delete-content-btn bg-red-500 text-white px-2 py-1 rounded-md text-sm hover:bg-red-600 transition-colors" data-index="${index}">Eliminar</button>
+                        </div>
+                    `;
+                    sectionContentList.appendChild(li);
+                });
+                
+                document.querySelectorAll('.edit-content-btn').forEach(button => {
+                    button.addEventListener('click', async (e) => {
+                        const indexToEdit = parseInt(e.target.dataset.index);
+                        const sectionId = addContentModal.dataset.sectionId;
+                        const sectionRef = doc(db, `/artifacts/${appId}/public/data/sections`, sectionId);
+                        const sectionDoc = await getDoc(sectionRef);
+                        const currentItems = sectionDoc.data().contentItems || [];
+                        const itemToEdit = currentItems[indexToEdit];
+                        
+                        editContentTypeSelect.value = itemToEdit.type;
+                        editContentTitleInput.value = itemToEdit.title;
+                        editContentUrlInput.value = itemToEdit.url;
+
+                        editContentModal.dataset.sectionId = sectionId;
+                        editContentModal.dataset.itemIndex = indexToEdit;
+                        addContentModal.classList.add('hidden'); // Ocultar el modal de agregar para evitar superposiciones
+                        editContentModal.classList.remove('hidden');
+                    });
+                });
+
+                document.querySelectorAll('.delete-content-btn').forEach(button => {
+                    button.addEventListener('click', async (e) => {
+                        const indexToDelete = parseInt(e.target.dataset.index);
+                        const sectionId = addContentModal.dataset.sectionId;
+                        const sectionRef = doc(db, `/artifacts/${appId}/public/data/sections`, sectionId);
+                        const sectionDoc = await getDoc(sectionRef);
+                        const currentItems = sectionDoc.data().contentItems || [];
+                        const newItems = currentItems.filter((_, index) => index !== indexToDelete);
+                        await updateDoc(sectionRef, { contentItems: newItems });
+                        renderSectionContentList(sectionId);
+                    });
+                });
+            } else {
+                sectionContentList.innerHTML = '<li class="text-gray-500">No hay contenido añadido a esta sección.</li>';
+            }
+        }
+        
+        editContentForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const sectionId = editContentModal.dataset.sectionId;
+            const itemIndex = parseInt(editContentModal.dataset.itemIndex);
+            const newType = editContentTypeSelect.value;
+            const newTitle = editContentTitleInput.value;
+            const newUrl = editContentUrlInput.value;
+            
+            const sectionRef = doc(db, `/artifacts/${appId}/public/data/sections`, sectionId);
+            const sectionDoc = await getDoc(sectionRef);
+            const currentItems = sectionDoc.data().contentItems || [];
+
+            currentItems[itemIndex] = {
+                type: newType,
+                title: newTitle,
+                url: newUrl,
+            };
+
+            await updateDoc(sectionRef, { contentItems: currentItems });
+            renderSectionContentList(sectionId);
+            editContentModal.classList.add('hidden');
+            addContentModal.classList.remove('hidden'); // Mostrar de nuevo el modal de agregar
+        });
+
+        closeContentModal.addEventListener('click', () => {
+            addContentModal.classList.add('hidden');
+        });
+        
+        closeEditContentModal.addEventListener('click', () => {
+            editContentModal.classList.add('hidden');
+            addContentModal.classList.remove('hidden');
+        });
+
+        userAdminButton.addEventListener('click', () => {
+            userAdminModal.classList.remove('hidden');
+            renderUserList();
+        });
+
+        closeModalButton.addEventListener('click', () => {
+            userAdminModal.classList.add('hidden');
+        });
+        
+        userConfirmYes.addEventListener('click', async () => {
+            if (pendingUserAction) {
+                const userRef = doc(db, `/artifacts/${appId}/public/data/users`, pendingUserAction);
+                await deleteDoc(userRef);
+                userConfirmModal.classList.add('hidden');
+                pendingUserAction = null;
+            }
+        });
+
+        userConfirmNo.addEventListener('click', () => {
+            userConfirmModal.classList.add('hidden');
+            pendingUserAction = null;
+        });
+        
+        savePasswordButton.addEventListener('click', async () => {
+            if (pendingUserAction) {
+                const newPassword = newPasswordModalInput.value;
+                if (newPassword) {
+                    const userRef = doc(db, `/artifacts/${appId}/public/data/users`, pendingUserAction);
+                    await setDoc(userRef, { password: newPassword }, { merge: true });
+                    userPasswordModal.classList.add('hidden');
+                    pendingUserAction = null;
+                }
+            }
+        });
+        
+        closePasswordModal.addEventListener('click', () => {
+            userPasswordModal.classList.add('hidden');
+            pendingUserAction = null;
+        });
+
+        function renderUserList() {
+            userList.innerHTML = '';
+            for (const username in USERS) {
+                const user = USERS[username];
+                const li = document.createElement('li');
+                li.className = 'flex justify-between items-center bg-gray-100 p-2 rounded-md shadow-sm';
+                
+                const userText = document.createElement('span');
+                userText.textContent = `${user.username} (${user.role}): ${user.password}`;
+                li.appendChild(userText);
+
+                const actionsDiv = document.createElement('div');
+                
+                const deleteButton = document.createElement('button');
+                deleteButton.textContent = 'Eliminar';
+                deleteButton.className = 'bg-red-500 text-white px-3 py-1 rounded-md text-sm hover:bg-red-600 transition-colors mr-2';
+                deleteButton.addEventListener('click', () => {
+                    userConfirmMessage.textContent = `¿Estás seguro de que quieres eliminar a "${user.username}"?`;
+                    pendingUserAction = user.id;
+                    userConfirmModal.classList.remove('hidden');
+                });
+                actionsDiv.appendChild(deleteButton);
+                
+                const editButton = document.createElement('button');
+                editButton.textContent = 'Cambiar Clave';
+                editButton.className = 'bg-yellow-500 text-white px-3 py-1 rounded-md text-sm hover:bg-yellow-600 transition-colors';
+                editButton.addEventListener('click', () => {
+                    newPasswordModalInput.value = '';
+                    pendingUserAction = user.id;
+                    userPasswordModal.classList.remove('hidden');
+                });
+                actionsDiv.appendChild(editButton);
+
+                li.appendChild(actionsDiv);
+                userList.appendChild(li);
+            }
+        }
+
+        createUserForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const newUsername = newUsernameInput.value.toLowerCase();
+            const newPassword = newPasswordInput.value;
+            const newRole = 'user';
+
+            if (newUsername in USERS) {
+                console.error("Error: User already exists.");
+                return;
+            }
+
+            try {
+                await addDoc(collection(db, `/artifacts/${appId}/public/data/users`), {
+                    username: newUsername,
+                    password: newPassword,
+                    role: newRole,
+                });
+                newUsernameInput.value = '';
+                newPasswordInput.value = '';
+            } catch (e) {
+                    console.error("Error creating user: ", e);
+            }
+        });
+        
+        async function createInitialUsers() {
+            const usersRef = collection(db, `/artifacts/${appId}/public/data/users`);
+            const usersSnapshot = await getDocs(usersRef);
+            if (usersSnapshot.empty) {
+                console.log("Creating initial users...");
+                await addDoc(usersRef, { username: 'pepe', password: '123', role: 'user' });
+                await addDoc(usersRef, { username: 'jeyson', password: '123', role: 'admin' });
+                console.log("Initial users created.");
+            } else {
+                console.log("Initial users already exist. Proceeding...");
+            }
+        }
+        
+        authenticate();
+
+    </script>
+</head>
+<body class="bg-gray-100 p-8 font-sans text-gray-800">
+
+    <!-- Pantalla de inicio de sesión -->
+    <div id="login-screen" class="max-w-md mx-auto bg-white rounded-xl shadow-lg p-8 space-y-6">
+        <h1 class="text-3xl font-bold text-center text-blue-700">Iniciar Sesión</h1>
+        <div class="space-y-4">
+            <div>
+                <label for="username" class="block text-gray-700">Usuario:</label>
+                <input type="text" id="username" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 px-3 py-2">
+            </div>
+            <div>
+                <label for="password" class="block text-gray-700">Contraseña:</label>
+                <input type="password" id="password" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 px-3 py-2">
+            </div>
+            <button id="login-button" class="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition-colors" disabled>Entrar</button>
+            <p id="loading-message" class="text-center text-gray-500 mt-2">Cargando...</p>
+            <p id="error-message" class="text-red-500 text-center hidden mt-2">Mensaje de error</p>
+        </div>
+    </div>
+
+    <!-- Pantalla principal (oculta por defecto) -->
+    <div id="main-screen" class="max-w-7xl mx-auto bg-white rounded-xl shadow-lg p-6 md:p-12 space-y-8 hidden">
+        <header class="flex flex-col sm:flex-row justify-between items-center mb-6">
+            <h1 id="user-greeting" class="text-3xl md:text-5xl font-bold text-blue-700 text-center sm:text-left"></h1>
+            <div class="flex space-x-2 mt-4 sm:mt-0">
+                <button id="user-admin-button" class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors hidden">Administrar Usuarios</button>
+                <button id="logout-button" class="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition-colors">Cerrar Sesión</button>
+            </div>
+        </header>
+        <p id="user-id-display" class="text-gray-500 text-sm text-right"></p>
+        
+        <!-- Sección del Administrador -->
+        <section id="admin-section" class="space-y-6 hidden">
+            
+            <h2 class="text-2xl font-semibold text-gray-800 border-b-2 border-blue-300 pb-2">Administrar Secciones</h2>
+            <div class="space-y-6">
+                <form id="create-section-form" class="bg-gray-50 p-6 rounded-lg shadow-inner space-y-4" data-mode="add">
+                    <h3 class="text-xl font-bold">Crear Nueva Sección</h3>
+                    <div>
+                        <label for="section-name" class="block text-gray-700">Nombre de la Sección:</label>
+                        <input type="text" id="section-name" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm px-3 py-2">
+                    </div>
+                    <div>
+                        <label for="section-description" class="block text-gray-700">Descripción:</label>
+                        <textarea id="section-description" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm px-3 py-2"></textarea>
+                    </div>
+                    <div>
+                        <label for="section-image" class="block text-gray-700">URL de Imagen de Portada:</label>
+                        <input type="url" id="section-image" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm px-3 py-2">
+                    </div>
+                    <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition-colors">Crear Sección</button>
+                </form>
+
+                <div class="mt-8">
+                    <h3 class="text-xl font-bold">Secciones Existentes</h3>
+                    <div id="admin-sections-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-4">
+                        <!-- Las tarjetas de secciones se renderizan aquí -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Sección del Usuario -->
+        <section id="user-section" class="space-y-6 hidden">
+            <h2 class="text-2xl font-semibold text-gray-800 border-b-2 border-blue-300 pb-2">Secciones de Formación</h2>
+            <div id="user-sections-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Las tarjetas de secciones para el usuario se renderizan aquí -->
+            </div>
+        </section>
+    </div>
+
+    <!-- Modal de administración de usuarios -->
+    <div id="user-admin-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+        <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
+            <div class="mt-3 text-center">
+                <div class="flex justify-between items-center pb-3">
+                    <h3 class="text-lg font-bold text-gray-900">Administrar Usuarios</h3>
+                    <button id="close-modal-button" class="bg-gray-200 text-gray-600 p-2 rounded-full hover:bg-gray-300">
+                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+                
+                <div class="mt-2 text-left">
+                    <h4 class="text-md font-semibold text-gray-700">Crear Nuevo Usuario</h4>
+                    <form id="create-user-form" class="mt-2 space-y-2">
+                        <input type="text" id="new-username" placeholder="Usuario" required class="block w-full rounded-md border-gray-300 px-3 py-2">
+                        <input type="password" id="new-password" placeholder="Contraseña" required class="block w-full rounded-md border-gray-300 px-3 py-2">
+                        <button type="submit" class="w-full bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors">Crear Usuario</button>
+                    </form>
+                    
+                    <h4 class="text-md font-semibold text-gray-700 mt-4">Lista de Usuarios</h4>
+                    <ul id="user-list" class="space-y-2 mt-2">
+                        <!-- La lista de usuarios se renderiza aquí -->
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal de confirmación para usuarios -->
+    <div id="user-confirm-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+        <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-1/3 shadow-lg rounded-md bg-white">
+            <div class="mt-3 text-center">
+                <p id="user-confirm-message" class="text-lg text-gray-900 mb-4"></p>
+                <div class="items-center px-4 py-3 flex justify-around">
+                    <button id="user-confirm-yes" class="px-4 py-2 bg-red-500 text-white text-base font-medium rounded-md shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors">Sí</button>
+                    <button id="user-confirm-no" class="px-4 py-2 bg-gray-200 text-gray-800 text-base font-medium rounded-md shadow-sm hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-300 transition-colors">No</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal para cambiar contraseña de usuario -->
+    <div id="user-password-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+        <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-1/3 shadow-lg rounded-md bg-white">
+            <div class="mt-3 text-center">
+                <h3 class="text-lg font-bold text-gray-900 mb-4">Cambiar Contraseña</h3>
+                <input type="password" id="new-password-modal-input" placeholder="Nueva Contraseña" class="block w-full rounded-md border-gray-300 shadow-sm px-3 py-2 mb-4">
+                <div class="items-center px-4 py-3 flex justify-around">
+                    <button id="save-password-button" class="px-4 py-2 bg-blue-500 text-white text-base font-medium rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors">Guardar</button>
+                    <button id="close-password-modal" class="px-4 py-2 bg-gray-200 text-gray-800 text-base font-medium rounded-md shadow-sm hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-300 transition-colors">Cancelar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal para agregar contenido a una sección -->
+    <div id="add-content-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+        <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-1/2 lg:w-1/3 shadow-lg rounded-md bg-white">
+            <div class="mt-3 text-center">
+                <div class="flex justify-between items-center pb-3">
+                    <h3 class="text-lg font-bold text-gray-900">Agregar Contenido a la Sección</h3>
+                    <button id="close-content-modal" class="bg-gray-200 text-gray-600 p-2 rounded-full hover:bg-gray-300">
+                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="mt-2 text-left space-y-4">
+                    <form id="add-content-form" class="space-y-4">
+                        <div>
+                            <label for="content-type" class="block text-gray-700">Tipo de Contenido:</label>
+                            <select id="content-type" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm px-3 py-2">
+                                <option value="video">Video</option>
+                                <option value="guia">Guía</option>
+                                <option value="modulo">Módulo</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="content-title" class="block text-gray-700">Título:</label>
+                            <input type="text" id="content-title" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm px-3 py-2">
+                        </div>
+                        <div>
+                            <label for="content-url" class="block text-gray-700">URL del Recurso:</label>
+                            <input type="url" id="content-url" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm px-3 py-2">
+                        </div>
+                        <button type="submit" class="w-full bg-green-600 text-white py-2 rounded-md hover:bg-green-700 transition-colors">Agregar</button>
+                    </form>
+                    <div class="mt-4">
+                        <h4 class="text-md font-semibold text-gray-700">Contenido en la Sección:</h4>
+                        <ul id="section-content-list" class="space-y-2 mt-2">
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal para editar contenido de una sección -->
+    <div id="edit-content-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+        <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-1/2 lg:w-1/3 shadow-lg rounded-md bg-white">
+            <div class="mt-3 text-center">
+                <div class="flex justify-between items-center pb-3">
+                    <h3 class="text-lg font-bold text-gray-900">Editar Contenido</h3>
+                    <button id="close-edit-content-modal" class="bg-gray-200 text-gray-600 p-2 rounded-full hover:bg-gray-300">
+                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="mt-2 text-left space-y-4">
+                    <form id="edit-content-form" class="space-y-4">
+                        <div>
+                            <label for="edit-content-type" class="block text-gray-700">Tipo de Contenido:</label>
+                            <select id="edit-content-type" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm px-3 py-2">
+                                <option value="video">Video</option>
+                                <option value="guia">Guía</option>
+                                <option value="modulo">Módulo</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="edit-content-title" class="block text-gray-700">Título:</label>
+                            <input type="text" id="edit-content-title" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm px-3 py-2">
+                        </div>
+                        <div>
+                            <label for="edit-content-url" class="block text-gray-700">URL del Recurso:</label>
+                            <input type="url" id="edit-content-url" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm px-3 py-2">
+                        </div>
+                        <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition-colors">Guardar Cambios</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal para ver el contenido de una sección (usuario) -->
+    <div id="view-section-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+        <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
+            <div class="mt-3 text-center">
+                <div class="flex justify-between items-center pb-3">
+                    <h3 class="text-lg font-bold text-gray-900">Contenido de la Sección</h3>
+                    <button id="close-view-section-modal" class="bg-gray-200 text-gray-600 p-2 rounded-full hover:bg-gray-300">
+                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+                <div id="view-section-content" class="mt-2 text-left space-y-4">
+                    <!-- El contenido de la sección se renderiza aquí -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
