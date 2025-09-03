@@ -110,6 +110,9 @@
             if (user) {
                 loadingMessage.textContent = 'Conectando a la base de datos...';
                 isAuthReady = true;
+                
+                // ** IMPORTANTE: Esta función es solo para el primer uso en este entorno.
+                // ** En una aplicación real, la eliminarías después de crear los usuarios iniciales.
                 await createInitialUsers();
 
                 const usersCollection = collection(db, `/artifacts/${appId}/public/data/users`);
