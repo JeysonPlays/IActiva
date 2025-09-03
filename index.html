@@ -106,14 +106,14 @@
 
         // Maneja el estado de la autenticación
         onAuthStateChanged(auth, async (user) => {
-            console.log("Authentication state changed:", user);
+            console.log("Estado de autenticación cambiado:", user);
             if (user) {
                 loadingMessage.textContent = 'Conectando a la base de datos...';
                 isAuthReady = true;
-                
+
                 const usersCollection = collection(db, `/artifacts/${appId}/public/data/users`);
                 onSnapshot(usersCollection, (snapshot) => {
-                    console.log("Users snapshot received.");
+                    console.log("Instantánea de usuarios recibida.");
                     loadingMessage.textContent = 'Cargando usuarios...';
                     USERS = {};
                     snapshot.forEach((doc) => {
@@ -132,7 +132,7 @@
                 // Lógica de Firestore para las secciones
                 const sectionsCollection = collection(db, `/artifacts/${appId}/public/data/sections`);
                 onSnapshot(sectionsCollection, (snapshot) => {
-                    console.log("Sections snapshot received.");
+                    console.log("Instantánea de secciones recibida.");
                     if (currentUser && currentUser.role === 'admin') {
                         renderAdminSections(snapshot.docs);
                     } else if (currentUser && currentUser.role === 'user') {
@@ -151,7 +151,7 @@
             try {
                 await signInAnonymously(auth);
             } catch (error) {
-                console.error("Error signing in:", error);
+                console.error("Error al iniciar sesión:", error);
             }
         }
 
