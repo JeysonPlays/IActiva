@@ -25,7 +25,7 @@
     </style>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, onSnapshot, doc, getDoc, setDoc, deleteDoc, getDocs, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         
@@ -143,6 +143,9 @@
             } else {
                 isAuthReady = false;
                 showLoginScreen();
+                // ** SOLUCIÓN: HABILITAR EL BOTÓN Y OCULTAR EL MENSAJE DE CARGA AL CERRAR SESIÓN **
+                loginButton.disabled = false;
+                loadingMessage.classList.add('hidden');
             }
         });
         
@@ -313,9 +316,24 @@
             }
         });
 
-        logoutButton.addEventListener('click', () => {
-            currentUser = null;
-            showLoginScreen();
+        logoutButton.addEventListener('click', async () => {
+            try {
+                // La solución que sugieres
+                await signOut(auth); // Cierra la sesión de Firebase
+                currentUser = null;
+                showLoginScreen();
+
+                // Limpia los campos de login para que queden listos
+                usernameInput.value = '';
+                passwordInput.value = '';
+                
+                // Vuelve a iniciar sesión de forma anónima
+                await authenticate();
+
+                console.log("Sesión cerrada y reiniciada correctamente");
+            } catch (error) {
+                console.error("Error al cerrar sesión:", error);
+            }
         });
 
         createSectionForm.addEventListener('submit', async (e) => {
