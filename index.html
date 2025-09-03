@@ -111,10 +111,6 @@
                 loadingMessage.textContent = 'Conectando a la base de datos...';
                 isAuthReady = true;
                 
-                // ** IMPORTANTE: Esta función es solo para el primer uso en este entorno.
-                // ** En una aplicación real, la eliminarías después de crear los usuarios iniciales.
-                await createInitialUsers();
-
                 const usersCollection = collection(db, `/artifacts/${appId}/public/data/users`);
                 onSnapshot(usersCollection, (snapshot) => {
                     console.log("Users snapshot received.");
@@ -146,7 +142,6 @@
             } else {
                 isAuthReady = false;
                 showLoginScreen();
-                // ** SOLUCIÓN: HABILITAR EL BOTÓN Y OCULTAR EL MENSAJE DE CARGA AL CERRAR SESIÓN **
                 loginButton.disabled = false;
                 loadingMessage.classList.add('hidden');
             }
@@ -321,18 +316,12 @@
 
         logoutButton.addEventListener('click', async () => {
             try {
-                // La solución que sugieres
                 await signOut(auth); // Cierra la sesión de Firebase
                 currentUser = null;
                 showLoginScreen();
-
-                // Limpia los campos de login para que queden listos
                 usernameInput.value = '';
                 passwordInput.value = '';
-                
-                // Vuelve a iniciar sesión de forma anónima
                 await authenticate();
-
                 console.log("Sesión cerrada y reiniciada correctamente");
             } catch (error) {
                 console.error("Error al cerrar sesión:", error);
@@ -589,19 +578,6 @@
                     console.error("Error creating user: ", e);
             }
         });
-        
-        async function createInitialUsers() {
-            const usersRef = collection(db, `/artifacts/${appId}/public/data/users`);
-            const usersSnapshot = await getDocs(usersRef);
-            if (usersSnapshot.empty) {
-                console.log("Creating initial users...");
-                await addDoc(usersRef, { username: 'pepe', password: '123', role: 'user' });
-                await addDoc(usersRef, { username: 'jeyson', password: '123', role: 'admin' });
-                console.log("Initial users created.");
-            } else {
-                console.log("Initial users already exist. Proceeding...");
-            }
-        }
         
         authenticate();
 
