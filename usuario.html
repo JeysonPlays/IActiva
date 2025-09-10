@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>IActiva - Usuario</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        font-family: "Inter", sans-serif;
+        background: linear-gradient(135deg, #8b0000 0%, #4b0082 100%);
+      }
+      .card {
+        background-color: #fff;
+        border-radius: 1.5rem;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
+          0 10px 10px -5px rgba(0, 0, 0, 0.04);
+      }
+      .modal-content {
+        border-radius: 1rem;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+          0 4px 6px -2px rgba(0, 0, 0, 0.05);
+      }
+    </style>
+    <script type="module" src="usuario.js"></script>
+  </head>
+  <body class="bg-gray-100 p-0 m-0 overflow-x-hidden font-sans text-gray-800">
+    <!-- Pantalla principal (oculta por defecto) -->
+    <div
+      id="main-screen"
+      class="min-h-screen flex flex-col p-4 md:p-8 space-y-8 hidden"
+    >
+      <header
+        class="card p-6 flex flex-col sm:flex-row justify-between items-center"
+      >
+        <h1
+          id="user-greeting"
+          class="text-2xl md:text-3xl font-bold text-red-700 text-center sm:text-left mb-4 sm:mb-0"
+        ></h1>
+        <div class="flex space-x-2 flex-wrap justify-center sm:justify-end">
+          <button
+            id="logout-button"
+            class="bg-gray-500 text-white px-4 py-2 rounded-full hover:bg-gray-600 transition-colors text-sm"
+          >
+            Cerrar Sesión
+          </button>
+        </div>
+      </header>
+
+      <!-- Sección del Usuario -->
+      <section id="user-section" class="flex-grow space-y-8">
+        <div id="user-sections-list" class="space-y-6">
+          <!-- Las tarjetas de secciones para el usuario se renderizan aquí -->
+        </div>
+      </section>
+    </div>
+
+    <!-- Modal para ver el contenido de una sección (usuario) -->
+    <div
+      id="view-section-modal"
+      class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50 flex items-center justify-center p-4"
+    >
+      <div class="w-full max-w-2xl modal-content p-6 bg-white text-left">
+        <div class="flex justify-between items-center pb-4 mb-4 border-b">
+          <h3 class="text-xl font-bold text-gray-900">
+            Contenido de la Sección
+          </h3>
+          <button
+            id="close-view-section-modal"
+            class="bg-gray-200 text-gray-600 p-2 rounded-full hover:bg-gray-300"
+          >
+            <svg
+              class="h-5 w-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
+        </div>
+        <div id="view-section-content" class="space-y-4">
+          <!-- El contenido de la sección se renderiza aquí -->
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
