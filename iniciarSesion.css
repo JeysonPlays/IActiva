@@ -5,7 +5,7 @@
 ============================= */
 
 :root {
-  /* Paleta moderna teal + indigo + acento coral suave */
+  /* Variables base de login + fondo traído desde admin */
   --brand-gradient: linear-gradient(
     115deg,
     #14b8a6 0%,
@@ -15,28 +15,44 @@
   );
   --brand-color: #6366f1;
   --brand-accent: #14b8a6;
-  --bg-color: #f5f9fc;
-  --bg-gradient: radial-gradient(circle at 65% 25%, #e0f7fa 0%, #f5f9fc 55%);
-  --text-color: #1e293b;
-  --text-dim: #557087;
+  --text-color: #f5f7fb;
+  --text-dim: #b5c0d4;
   --error-color: #dc2626;
-  --success-color: #0d9488;
-  --warning-color: #d97706;
-  --border-color: #bed3df;
+  --success-color: #16a34a;
+  --warning-color: #eab308;
+  --border-color: rgba(255, 255, 255, 0.18);
   --radius-xs: 4px;
   --radius-sm: 12px;
   --radius-md: 999px; /* pill */
   --radius-lg: 40px; /* tarjeta más fluida */
-  --focus-ring: 0 0 0 3px #14b8a640, 0 0 0 1.5px #6366f1;
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.06),
-    0 0 0 1px rgba(20, 184, 166, 0.18) inset;
-  --shadow-md: 0 10px 32px -8px rgba(99, 102, 241, 0.18),
-    0 6px 14px -4px rgba(20, 184, 166, 0.12);
-  --shadow-glow: 0 0 0 1px #14b8a655, 0 0 0 4px #6366f122,
-    0 8px 36px -8px rgba(99, 102, 241, 0.45);
+  --focus-ring: 0 0 0 3px rgba(255, 45, 85, 0.35),
+    0 0 0 6px rgba(255, 45, 85, 0.18);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.25),
+    0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+  --shadow-md: 0 10px 40px -10px rgba(0, 0, 0, 0.55),
+    0 0 0 1px rgba(255, 255, 255, 0.04);
+  --shadow-glow: 0 0 0 1px rgba(255, 45, 85, 0.5),
+    0 0 0 4px rgba(255, 45, 85, 0.2), 0 8px 36px -8px rgba(255, 45, 85, 0.5);
   --blur-backdrop: saturate(185%) blur(26px);
   --transition-fast: 120ms cubic-bezier(0.4, 0, 0.2, 1);
   --transition-base: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  /* Gradiente de fondo NUEVO (azules profundos -> cyan -> violeta) */
+  --gradient-bg: linear-gradient(
+    135deg,
+    #041a36 0%,
+    #072c55 12%,
+    #083d73 24%,
+    #0a4c8d 36%,
+    #0d5da8 48%,
+    #0f6fbe 58%,
+    #1382cc 66%,
+    #1d92d4 74%,
+    #3aa6da 82%,
+    #5fb7e1 90%,
+    #7cc7e8 96%,
+    #8fd7f0 100%
+  );
+  /* Puedes alternar a otros fondos agregando una clase al body: .bg-alt-1 o .bg-alt-2 */
   font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
     Roboto, Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans",
     "Helvetica Neue", Arial, sans-serif;
@@ -77,8 +93,10 @@ body {
 }
 body {
   margin: 0;
-  background: linear-gradient(130deg, #ffffff 0%, #eef6ff 40%, #f5f9fc 70%),
-    var(--bg-gradient), var(--bg-color);
+  background: var(--gradient-bg);
+  background-attachment: fixed;
+  background-size: 160% 160%;
+  animation: adminBgShift 32s ease-in-out infinite;
   color: var(--text-color);
   font-family: inherit;
   -webkit-font-smoothing: antialiased;
@@ -89,77 +107,54 @@ body {
   overflow: hidden;
   position: relative;
 }
-body::before,
-body::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  mix-blend-mode: screen;
-}
-body::before {
-  background: radial-gradient(
-    circle at 20% 80%,
-    rgba(99, 102, 241, 0.18),
-    transparent 65%
+/* Variante alternativa 1: Púrpura -> magenta -> dorado */
+body.bg-alt-1 {
+  --gradient-bg: linear-gradient(
+    130deg,
+    #1b0f33 0%,
+    #34175e 16%,
+    #4d1f89 32%,
+    #6a22b3 48%,
+    #8a2fd1 60%,
+    #b03ee3 72%,
+    #d24df0 82%,
+    #f062d7 90%,
+    #f7a552 100%
   );
-  filter: blur(50px);
 }
-body::after {
-  background: radial-gradient(
-    circle at 85% 15%,
-    rgba(20, 184, 166, 0.22),
-    transparent 60%
+/* Variante alternativa 2: Verde bosque -> turquesa -> lima */
+body.bg-alt-2 {
+  --gradient-bg: linear-gradient(
+    140deg,
+    #022b20 0%,
+    #024631 14%,
+    #04624a 28%,
+    #068062 42%,
+    #069d79 56%,
+    #07b991 70%,
+    #32cfa8 82%,
+    #70e2bf 92%,
+    #b2f3d7 100%
   );
-  filter: blur(60px);
 }
+@keyframes adminBgShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  40% {
+    background-position: 85% 50%;
+  }
+  60% {
+    background-position: 90% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+/* Decorativos previos del fondo eliminados para un look consistente con admin */
 
 /* Fondo decorativo animado */
-.bg-particles,
-.bg-orbs {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: -2;
-}
-.bg-orbs::before,
-.bg-orbs::after {
-  content: "";
-  position: absolute;
-  width: 680px;
-  height: 680px;
-  background: radial-gradient(circle at 30% 30%, #6366f155, transparent 70%);
-  top: -120px;
-  left: -120px;
-  filter: blur(60px);
-  animation: floatA 14s ease-in-out infinite;
-}
-.bg-orbs::after {
-  top: auto;
-  left: auto;
-  bottom: -160px;
-  right: -140px;
-  background: radial-gradient(circle at 70% 70%, #ec489955, transparent 70%);
-  animation: floatB 18s ease-in-out infinite;
-}
-@keyframes floatA {
-  0%,
-  100% {
-    transform: translateY(0) scale(1);
-  }
-  50% {
-    transform: translateY(40px) scale(1.05);
-  }
-}
-@keyframes floatB {
-  0%,
-  100% {
-    transform: translateY(0) scale(1);
-  }
-  50% {
-    transform: translateY(-50px) scale(1.07);
-  }
-}
+/* Orbes y partículas eliminados al migrar el esquema de fondo */
 
 /* Contenedor principal */
 #root {
