@@ -1,0 +1,578 @@
+/* =============================
+	 IActiva - Pantalla Iniciar Sesión
+	 Diseño moderno (glass + gradiente) - 2025
+	 Personaliza variables según tu branding
+============================= */
+
+:root {
+  /* Variables base de login + fondo traído desde admin */
+  --brand-gradient: linear-gradient(
+    115deg,
+    #14b8a6 0%,
+    #6366f1 40%,
+    #818cf8 60%,
+    #fb7185 95%
+  );
+  --brand-color: #6366f1;
+  --brand-accent: #14b8a6;
+  --text-color: #f5f7fb;
+  --text-dim: #b5c0d4;
+  --error-color: #dc2626;
+  --success-color: #16a34a;
+  --warning-color: #eab308;
+  --border-color: rgba(255, 255, 255, 0.18);
+  --radius-xs: 4px;
+  --radius-sm: 12px;
+  --radius-md: 999px; /* pill */
+  --radius-lg: 40px; /* tarjeta más fluida */
+  --focus-ring: 0 0 0 3px rgba(255, 45, 85, 0.35),
+    0 0 0 6px rgba(255, 45, 85, 0.18);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.25),
+    0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+  --shadow-md: 0 10px 40px -10px rgba(0, 0, 0, 0.55),
+    0 0 0 1px rgba(255, 255, 255, 0.04);
+  --shadow-glow: 0 0 0 1px rgba(255, 45, 85, 0.5),
+    0 0 0 4px rgba(255, 45, 85, 0.2), 0 8px 36px -8px rgba(255, 45, 85, 0.5);
+  --blur-backdrop: saturate(185%) blur(26px);
+  --transition-fast: 120ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-base: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  /* Gradiente de fondo NUEVO (azules profundos -> cyan -> violeta) */
+  --gradient-bg: linear-gradient(
+    135deg,
+    #041a36 0%,
+    #072c55 12%,
+    #083d73 24%,
+    #0a4c8d 36%,
+    #0d5da8 48%,
+    #0f6fbe 58%,
+    #1382cc 66%,
+    #1d92d4 74%,
+    #3aa6da 82%,
+    #5fb7e1 90%,
+    #7cc7e8 96%,
+    #8fd7f0 100%
+  );
+  /* Puedes alternar a otros fondos agregando una clase al body: .bg-alt-1 o .bg-alt-2 */
+  font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans",
+    "Helvetica Neue", Arial, sans-serif;
+}
+
+/* Tema oscuro original (usar añadiendo class="theme-dark" al <html> o <body>) */
+:root.theme-dark {
+  --bg-color: #0f1115;
+  --bg-gradient: radial-gradient(circle at 20% 20%, #1e2230, #0f1115 60%);
+  --text-color: #eef2ff;
+  --text-dim: #94a3b8;
+  --border-color: #33415588;
+}
+
+/* Tema claro brillante (añade class="theme-light") */
+:root.theme-light {
+  --bg-color: #f5f7fb;
+  --bg-gradient: radial-gradient(circle at 60% 30%, #ffffff, #dbe4ff 65%);
+  --text-color: #1e293b;
+  --text-dim: #64748b;
+  --border-color: #cbd5e199;
+}
+
+/* Modo claro opcional */
+@media (prefers-color-scheme: light) {
+  :root.light-auto {
+    --bg-color: #f5f7fb;
+    --bg-gradient: radial-gradient(circle at 70% 30%, #ffffff, #dbe4ff 65%);
+    --text-color: #1e293b;
+    --text-dim: #64748b;
+    --border-color: #cbd5e1aa;
+  }
+}
+
+html,
+body {
+  height: 100%;
+}
+body {
+  margin: 0;
+  background: var(--gradient-bg);
+  background-attachment: fixed;
+  background-size: 160% 160%;
+  animation: adminBgShift 32s ease-in-out infinite;
+  color: var(--text-color);
+  font-family: inherit;
+  -webkit-font-smoothing: antialiased;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(1rem, 2vw, 2.4rem) 1.2rem;
+  overflow: hidden;
+  position: relative;
+}
+/* Variante alternativa 1: Púrpura -> magenta -> dorado */
+body.bg-alt-1 {
+  --gradient-bg: linear-gradient(
+    130deg,
+    #1b0f33 0%,
+    #34175e 16%,
+    #4d1f89 32%,
+    #6a22b3 48%,
+    #8a2fd1 60%,
+    #b03ee3 72%,
+    #d24df0 82%,
+    #f062d7 90%,
+    #f7a552 100%
+  );
+}
+/* Variante alternativa 2: Verde bosque -> turquesa -> lima */
+body.bg-alt-2 {
+  --gradient-bg: linear-gradient(
+    140deg,
+    #022b20 0%,
+    #024631 14%,
+    #04624a 28%,
+    #068062 42%,
+    #069d79 56%,
+    #07b991 70%,
+    #32cfa8 82%,
+    #70e2bf 92%,
+    #b2f3d7 100%
+  );
+}
+@keyframes adminBgShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  40% {
+    background-position: 85% 50%;
+  }
+  60% {
+    background-position: 90% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+/* Decorativos previos del fondo eliminados para un look consistente con admin */
+
+/* Fondo decorativo animado */
+/* Orbes y partículas eliminados al migrar el esquema de fondo */
+
+/* Contenedor principal */
+#root {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.card {
+  position: relative;
+  width: 100%;
+  max-width: 300px; /* reducido más el ancho */
+  margin-inline: auto;
+  background: linear-gradient(
+    160deg,
+    rgba(255, 255, 255, 0.9),
+    rgba(240, 248, 255, 0.7)
+  );
+  border: 1px solid rgba(20, 184, 166, 0.35);
+  border-radius: var(--radius-lg);
+  padding: clamp(1.8rem, 3vw, 2.4rem) clamp(1.2rem, 2.4vw, 1.8rem)
+    clamp(2rem, 3.5vw, 2.6rem); /* padding lateral reducido */
+  backdrop-filter: var(--blur-backdrop);
+  -webkit-backdrop-filter: var(--blur-backdrop);
+  box-shadow: var(--shadow-md), 0 0 0 1px rgba(255, 255, 255, 0.8);
+  overflow: hidden;
+  isolation: isolate;
+  animation: cardIn 640ms var(--transition-base) forwards;
+}
+@keyframes cardIn {
+  from {
+    opacity: 0;
+    transform: translateY(28px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.card::before,
+.card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.card::before {
+  background: linear-gradient(
+    120deg,
+    rgba(20, 184, 166, 0.25),
+    transparent 45%,
+    rgba(99, 102, 241, 0.25)
+  );
+  mix-blend-mode: overlay;
+  opacity: 0.9;
+}
+.card::after {
+  background: radial-gradient(
+    circle at 78% 18%,
+    rgba(129, 140, 248, 0.55),
+    transparent 65%
+  );
+  opacity: 0.6;
+  filter: blur(26px);
+}
+
+.brand-title {
+  position: relative;
+  background: var(--brand-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  letter-spacing: 0.95px;
+  margin: 0 0 0.65rem;
+  font-size: clamp(2.25rem, 3.9vw, 3.15rem);
+  font-weight: 700;
+  text-align: center;
+  line-height: 1.05;
+  background-size: 250% 250%;
+  animation: titleFlow 10s ease-in-out infinite;
+  filter: drop-shadow(0 5px 20px rgba(99, 102, 241, 0.35))
+    drop-shadow(0 0 10px rgba(20, 184, 166, 0.25));
+}
+.brand-title::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -10px;
+  width: 58%;
+  height: 4px;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.25),
+    var(--brand-accent) 25%,
+    var(--brand-color) 65%,
+    rgba(255, 255, 255, 0.25)
+  );
+  transform: translateX(-50%);
+  border-radius: 999px;
+  box-shadow: 0 0 0 1px rgba(20, 184, 166, 0.35),
+    0 6px 22px -6px rgba(99, 102, 241, 0.55),
+    0 0 28px -4px rgba(20, 184, 166, 0.5);
+  animation: underlinePulse 5.8s ease-in-out infinite;
+}
+@keyframes titleFlow {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+@keyframes underlinePulse {
+  0%,
+  100% {
+    opacity: 0.9;
+    filter: blur(0.5px);
+  }
+  50% {
+    opacity: 0.45;
+    filter: blur(2.2px);
+  }
+}
+
+.subtitle {
+  margin: 0 0 1.9rem;
+  font-weight: 500;
+  font-size: 1.08rem;
+  letter-spacing: 0.6px;
+  text-align: center;
+  background: linear-gradient(90deg, #557087, #8ba7bb, #557087);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  background-size: 210% 100%;
+  animation: subtitleSheen 11s linear infinite;
+}
+@keyframes subtitleSheen {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+
+.form-group {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+.form-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  font-weight: 600;
+  color: var(--text-dim);
+}
+
+/* Inputs con fondo blanco sólido */
+.input-base {
+  appearance: none;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  background: #ffffff;
+  color: #000000; /* texto negro solicitado */
+  font: inherit;
+  padding: 0.85rem 2.6rem 0.85rem 1rem; /* más espacio a la derecha para icono */
+  border-radius: var(--radius-md);
+  line-height: 1.25;
+  width: 100%;
+  box-sizing: border-box;
+  display: block;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08),
+    0 0 0 1px rgba(255, 255, 255, 0.6) inset;
+  transition: var(--transition-fast);
+  outline: none;
+  position: relative;
+}
+.input-base::placeholder {
+  color: #64748b;
+  letter-spacing: 0.5px;
+}
+.input-base:hover {
+  background: #ffffff;
+  border-color: #94a3b8;
+}
+.input-base:focus {
+  border-color: var(--brand-color);
+  box-shadow: var(--focus-ring), 0 2px 6px -1px rgba(0, 0, 0, 0.25);
+  background: #ffffff;
+}
+.input-base:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* Oculta el botón nativo de mostrar/ocultar (Edge/IE) */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+  display: none;
+}
+input[type="password"]::-webkit-textfield-decoration-container,
+input[type="password"]::-webkit-clear-button,
+input[type="password"]::-webkit-reveal-button {
+  display: none;
+}
+
+/* Wrapper del input de contraseña para centrar el icono */
+.input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+.input-wrapper .input-base {
+  padding-right: 2.6rem; /* espacio para el botón */
+}
+
+/* Refinar botón de mostrar/ocultar */
+.toggle-password {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  right: 0.55rem;
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: #94a3b8;
+  transition: var(--transition-fast);
+  border-radius: var(--radius-sm);
+}
+.toggle-password:hover {
+  color: var(--brand-color);
+  background: rgba(99, 102, 241, 0.08);
+}
+.toggle-password:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.toggle-password svg {
+  display: block;
+  width: 18px;
+  height: 18px;
+  stroke-width: 2;
+}
+.toggle-password:hover svg {
+  transform: scale(1.05);
+}
+.toggle-password:active svg {
+  transform: scale(0.95);
+}
+
+.info-msg {
+  color: var(--text-dim); /* mantiene el mismo color del label */
+  background: none; /* sin fondo para quitar el cuadro */
+  border: none; /* sin borde */
+  letter-spacing: 0.3px;
+  display: inline; /* texto en línea normal */
+}
+.error-msg {
+  color: #fca5a5; /* tono rojo claro para contraste sobre fondo */
+  background: none;
+  border: none;
+  box-shadow: none;
+  padding: 0; /* eliminamos espacio extra del cuadro */
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+.divider {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.18),
+    transparent
+  );
+  margin: 0.35rem 0 0.25rem;
+}
+
+.submit-btn {
+  margin-top: 0.35rem;
+  border: none;
+  cursor: pointer;
+  font: inherit;
+  position: relative;
+  overflow: hidden;
+  color: #fff;
+  letter-spacing: 0.55px;
+  font-weight: 600;
+  padding: 0.9rem 1.65rem;
+  border-radius: 999px;
+  background: var(--brand-gradient);
+  background-size: 200% 200%;
+  box-shadow: 0 6px 22px -6px rgba(99, 102, 241, 0.55),
+    0 4px 10px -3px rgba(30, 41, 59, 0.25);
+  transition: background-position 620ms ease, transform var(--transition-fast),
+    box-shadow var(--transition-fast);
+}
+.submit-btn:hover:not(:disabled) {
+  background-position: 80% 30%;
+  transform: translateY(-3px);
+  box-shadow: 0 10px 28px -8px rgba(99, 102, 241, 0.55),
+    0 6px 14px -4px rgba(30, 41, 59, 0.22);
+}
+.submit-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+.submit-btn:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-glow);
+}
+.submit-btn:disabled {
+  filter: grayscale(0.35) brightness(0.85);
+  cursor: not-allowed;
+}
+
+.footer-hint {
+  margin-top: 0.9rem;
+  font-size: 0.7rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #64748b;
+  text-align: center;
+}
+.footer-hint::before {
+  content: "";
+  display: block;
+  width: 38%;
+  margin: 0 auto 0.75rem;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.25),
+    transparent
+  );
+}
+
+/* Scrollbar minimalista (por si hay overflow) */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #475569 #1e293b;
+}
+*::-webkit-scrollbar {
+  width: 10px;
+}
+*::-webkit-scrollbar-track {
+  background: #1e293b;
+}
+*::-webkit-scrollbar-thumb {
+  background: #475569;
+  border-radius: 20px;
+  border: 2px solid #1e293b;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
+}
+
+/* Responsivo */
+@media (max-width: 640px) {
+  .card {
+    padding: 1.9rem 1.35rem 2.2rem;
+    border-radius: 24px;
+  }
+  .brand-title {
+    font-size: 2.1rem;
+  }
+  body {
+    padding: 1.2rem 0.9rem;
+  }
+  /* No se necesita override; centrado con top:50% funciona también en móvil */
+}
+
+/* Animaciones en foco y error con sacudida leve opcional */
+.error-msg {
+  animation: popIn 380ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes popIn {
+  0% {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.95);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(0) scale(1.02);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Pref: reduce motion */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition: none !important;
+  }
+}
+
+/* Utilidad para forzar modo claro si se agrega clase .light-auto al html */
+/* html.light-auto { (ya definido arriba via media query) } */
