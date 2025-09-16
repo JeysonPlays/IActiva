@@ -1,0 +1,598 @@
+/* =============================
+   Estilos Página Usuario (Paleta Verde-Azul Clara)
+   Modo oscuro eliminado. Solo tema claro.
+   ============================= */
+
+:root {
+  /* Nuevo gradiente multi-stop (verde -> turquesa -> cian -> azul) inspirado en patrón admin */
+  --u-bg-gradient: linear-gradient(
+    132deg,
+    #0c8d62 0%,
+    #0ea572 12%,
+    #12b383 24%,
+    #16b18a 36%,
+    #18b8b6 48%,
+    #18b5c9 60%,
+    #19afd7 72%,
+    #20aede 84%,
+    #25a4e3 100%
+  );
+  /* Highlight radial eliminado para simplificar y evitar capas múltiples */
+  --u-bg-highlight: none;
+  --u-accent: #0ea572; /* Verde principal */
+  --u-accent-alt: #25a4e3; /* Azul claro de apoyo */
+  --u-blue: #1d9dd6;
+  --u-text: #0f2d33;
+  --u-text-dim: #4f6b72;
+  --u-card: rgba(255, 255, 255, 0.72);
+  --u-card-alt: rgba(255, 255, 255, 0.54);
+  --u-border: rgba(20, 140, 160, 0.18);
+  --u-radius-xl: 1.75rem;
+  --u-radius-lg: 1.25rem;
+  --u-shadow-1: 0 8px 26px -10px rgba(7, 109, 100, 0.28),
+    0 2px 8px -2px rgba(0, 60, 70, 0.12);
+  --u-shadow-soft: 0 4px 18px -6px rgba(7, 109, 100, 0.22);
+  --u-gradient-accent: linear-gradient(
+    120deg,
+    var(--u-accent),
+    var(--u-accent-alt)
+  );
+  --u-focus: 0 0 0 4px rgba(14, 165, 114, 0.35);
+  --u-transition-fast: 140ms cubic-bezier(0.4, 0, 0.2, 1);
+  --u-transition-med: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  font-family: "Inter", sans-serif;
+  min-height: 100vh;
+  background: var(--u-bg-gradient); /* Sin animación de desplazamiento */
+  background-attachment: fixed;
+  background-size: cover;
+  color: var(--u-text);
+  -webkit-font-smoothing: antialiased;
+  scroll-behavior: smooth;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* Orbes anteriores eliminados para que el gradiente se perciba claramente.
+  Si deseas reintroducirlos, añade elementos con clases .orb-green / .orb-blue (ver explicación previa). */
+
+/* Header */
+header.card {
+  background: linear-gradient(
+    145deg,
+    rgba(255, 255, 255, 0.78),
+    rgba(255, 255, 255, 0.52)
+  );
+  backdrop-filter: blur(18px) saturate(160%);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow: var(--u-shadow-1);
+  border-radius: var(--u-radius-xl);
+  position: relative;
+  overflow: hidden;
+}
+
+#user-greeting {
+  background: linear-gradient(90deg, var(--u-accent), var(--u-accent-alt));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: 0 4px 16px rgba(14, 165, 114, 0.35);
+}
+
+/* Cards de temas */
+/* Eliminada animación de aparición de tarjetas */
+
+#user-sections-list > div.card {
+  background: linear-gradient(
+    150deg,
+    rgba(255, 255, 255, 0.82),
+    rgba(255, 255, 255, 0.6)
+  );
+  backdrop-filter: blur(18px) saturate(160%);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  border-radius: var(--u-radius-xl);
+  box-shadow: 0 8px 26px -10px rgba(7, 109, 100, 0.25);
+  position: relative;
+  overflow: hidden;
+}
+#user-sections-list > div.card h3 {
+  font-size: 1.5rem;
+  margin: 0 0 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+}
+
+/* Tarjetas de secciones individuales */
+[id^="user-sections-list-"] .card {
+  display: flex;
+  flex-direction: column;
+  /* Sin transición ni movimiento en hover (solo imagen) */
+  transition: box-shadow var(--u-transition-med);
+}
+[id^="user-sections-list-"] .card:hover {
+  box-shadow: 0 10px 30px -12px rgba(0, 0, 0, 0.25);
+}
+
+.user-section-card-img-wrap {
+  width: 100%;
+  height: clamp(180px, 24vw, 260px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #eefbf7, #e0f5ff);
+  position: relative;
+  overflow: hidden;
+  padding: 0.75rem;
+}
+.user-section-card-img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 8px 22px rgba(0, 0, 0, 0.28));
+  transition: transform 0.65s cubic-bezier(0.25, 0.9, 0.3, 1), filter 0.55s;
+  will-change: transform;
+}
+.user-section-card-img:hover {
+  transform: scale(1.055);
+  filter: drop-shadow(0 14px 34px rgba(0, 0, 0, 0.5));
+}
+
+[id^="user-sections-list-"] .card .p-4 {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 200px;
+  position: relative;
+}
+[id^="user-sections-list-"] .card .p-4 h3 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin: 0 0 0.4rem;
+  color: #124a52;
+}
+[id^="user-sections-list-"] .card .p-4 p {
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: var(--u-text-dim);
+  margin: 0;
+  flex: 1 1 auto;
+}
+
+/* Modal base */
+.modal-content {
+  background: linear-gradient(
+    145deg,
+    rgba(255, 255, 255, 0.55),
+    rgba(255, 255, 255, 0.32)
+  );
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: var(--u-radius-lg);
+  box-shadow: 0 4px 18px -8px rgba(7, 109, 100, 0.28),
+    0 0 0 1px rgba(255, 255, 255, 0.28) inset;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Modal limpio legible */
+.modal-content.modal-clean.modal-readable {
+  background: #ffffff;
+  border: 1px solid #d3e9e2;
+  box-shadow: 0 6px 20px -6px rgba(7, 109, 100, 0.25),
+    0 0 0 1px rgba(120, 200, 190, 0.25);
+}
+.modal-content.modal-clean.modal-readable::before {
+  display: none;
+}
+.modal-content.modal-clean.modal-readable h3,
+.modal-content.modal-clean.modal-readable h4 {
+  color: #12323a;
+}
+.modal-content.modal-clean.modal-readable a {
+  color: var(--u-accent);
+  text-decoration: none;
+}
+.modal-content.modal-clean.modal-readable a:hover {
+  text-decoration: underline;
+}
+.modal-content.modal-clean.modal-readable .modal-header-line,
+.modal-content.modal-clean.modal-readable .border-b {
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+.modal-content.modal-clean .modal-header-line {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0),
+    rgba(255, 255, 255, 0.7),
+    rgba(255, 255, 255, 0)
+  );
+  margin: 0.85rem 0 1.1rem;
+}
+.modal-content.modal-clean #view-section-content h3 {
+  font-size: 1.25rem;
+  letter-spacing: 0.5px;
+  font-weight: 700;
+  margin: 0.2rem 0 1.1rem;
+}
+.modal-content.modal-clean .user-content-item h4 {
+  font-size: 0.85rem;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  opacity: 0.9;
+}
+.modal-content.modal-clean #close-view-section-modal {
+  box-shadow: 0 2px 8px -2px rgba(0, 0, 0, 0.35);
+  transition: background 0.25s, transform 0.25s;
+}
+.modal-content.modal-clean #close-view-section-modal:hover {
+  transform: scale(1.05);
+}
+
+/* Lista contenido */
+.user-content-item {
+  padding: 0.55rem 0 0.65rem;
+  margin: 0;
+  position: relative;
+}
+.user-content-item + .user-content-item {
+  margin-top: 0.3rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  padding-top: 0.65rem;
+}
+.user-content-item h4 {
+  margin: 0 0 0.25rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: 0.35px;
+  color: #124a52;
+}
+.user-content-item a {
+  color: var(--u-accent);
+  font-size: 0.75rem;
+  font-weight: 500;
+  word-break: break-word;
+}
+.user-content-item a:hover {
+  text-decoration: underline;
+}
+
+/* Overlay modal */
+.modal-overlay-clear {
+  /* Overlay ahora totalmente transparente para ver claramente el fondo */
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background: transparent;
+}
+
+/* Eliminar cabecera original del modal y su separación cuando se oculta el título */
+#view-section-modal .modal-content.modal-clean.modal-readable > .flex {
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+  padding: 0;
+  margin: 0 0 0.75rem;
+  border: none;
+  min-height: 0;
+}
+#view-section-modal .modal-content.modal-clean.modal-readable > .flex h3 {
+  display: none !important;
+}
+#view-section-modal .modal-content.modal-clean.modal-readable > .flex::after {
+  content: none !important;
+}
+
+/* Ajuste adicional del botón cerrar al eliminar el título */
+#view-section-modal #close-view-section-modal {
+  margin-top: 0.25rem;
+  margin-right: 0.25rem;
+}
+
+/* =============================
+   Modal de Sección (estilo tipo Admin)
+   ============================= */
+#view-section-modal .modal-content.modal-clean.modal-readable {
+  /* Fondo glass gradiente similar filosofía admin pero adaptado a paleta verde-azul */
+  background: linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.35),
+      rgba(255, 255, 255, 0.12)
+    ),
+    linear-gradient(120deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0));
+  backdrop-filter: blur(26px) saturate(180%);
+  -webkit-backdrop-filter: blur(26px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  border-radius: var(--u-radius-xl);
+  box-shadow: 0 12px 48px -18px rgba(0, 70, 80, 0.55),
+    0 4px 18px -6px rgba(0, 60, 70, 0.3),
+    0 0 0 1px rgba(255, 255, 255, 0.18) inset;
+  position: relative;
+  overflow: hidden;
+  padding: 2rem 2rem 2.1rem; /* Restaurado padding superior para título clásico */
+}
+#view-section-modal .modal-content.modal-clean.modal-readable::before {
+  /* Radiales eliminados para evitar contornos marcados en fondos claros */
+  content: none;
+}
+
+/* Cabecera y título con barra/acento */
+#view-section-modal .modal-content.modal-clean.modal-readable > .flex {
+  border: none;
+  position: relative;
+  padding-bottom: 1.25rem;
+  margin-bottom: 1.65rem;
+}
+#view-section-modal .modal-content.modal-clean.modal-readable > .flex::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 2px;
+  width: 100%;
+  background: linear-gradient(
+    90deg,
+    rgba(0, 0, 0, 0) 0%,
+    rgba(14, 165, 114, 0.6) 12%,
+    rgba(14, 165, 114, 0.85) 33%,
+    rgba(37, 164, 227, 0.85) 66%,
+    rgba(37, 164, 227, 0.4) 82%,
+    rgba(0, 0, 0, 0) 100%
+  );
+  border-radius: 2px;
+  filter: drop-shadow(0 4px 8px rgba(14, 165, 114, 0.35));
+}
+#view-section-modal .modal-content.modal-clean.modal-readable h3 {
+  font-size: 1.45rem;
+  font-weight: 700;
+  margin: 0;
+  letter-spacing: 0.5px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  background: linear-gradient(90deg, var(--u-accent), var(--u-accent-alt));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  position: relative;
+}
+#view-section-modal .modal-content.modal-clean.modal-readable h3::after {
+  content: "";
+  height: 6px;
+  width: clamp(40px, 7vw, 84px);
+  background: var(--u-gradient-accent);
+  border-radius: 6px;
+  filter: drop-shadow(0 4px 10px rgba(14, 165, 114, 0.4));
+  display: inline-block;
+  animation: uTitleBarIn 0.85s cubic-bezier(0.25, 0.9, 0.3, 1.4) both;
+}
+@keyframes uTitleBarIn {
+  0% {
+    transform: scaleX(0);
+    opacity: 0;
+    transform-origin: left;
+  }
+  55% {
+    opacity: 1;
+  }
+  100% {
+    transform: scaleX(1);
+    opacity: 1;
+  }
+}
+
+/* Botón cerrar coherente */
+#view-section-modal #close-view-section-modal {
+  background: linear-gradient(135deg, #e2eff0, #d4ecf5);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2px 8px -2px rgba(0, 70, 80, 0.25);
+  transition: background 0.25s, transform 0.25s, box-shadow 0.35s;
+}
+#view-section-modal #close-view-section-modal:hover {
+  background: linear-gradient(135deg, #ffffff, #e6f6fa);
+  transform: scale(1.06);
+}
+
+/* Contenedor del contenido: separación visual suave */
+#view-section-content {
+  position: relative;
+  z-index: 1;
+}
+
+/* Items de contenido convertidos en mini-panels */
+#view-section-content .user-content-item {
+  background: linear-gradient(
+    150deg,
+    rgba(255, 255, 255, 0.85),
+    rgba(255, 255, 255, 0.65)
+  );
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 1rem;
+  padding: 0.95rem 1.1rem 1rem;
+  margin: 0;
+  box-shadow: 0 4px 16px -8px rgba(7, 109, 100, 0.25),
+    0 0 0 1px rgba(255, 255, 255, 0.6);
+  position: relative;
+  overflow: hidden;
+}
+#view-section-content .user-content-item + .user-content-item {
+  margin-top: 0.85rem;
+  border-top: none;
+  padding-top: 0.95rem;
+}
+#view-section-content .user-content-item h4 {
+  margin: 0 0 0.4rem;
+  font-size: 0.8rem;
+  letter-spacing: 0.35px;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: #13515a;
+  opacity: 0.85;
+}
+#view-section-content .user-content-item a {
+  color: var(--u-accent);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.35px;
+  text-decoration: none;
+  word-break: break-word;
+  transition: color 0.25s;
+}
+#view-section-content .user-content-item a:hover {
+  color: var(--u-accent-alt);
+  text-decoration: underline;
+}
+
+/* Scroll interno opcional si la lista crece mucho */
+@media (min-height: 740px) {
+  #view-section-modal .modal-content.modal-clean.modal-readable {
+    max-height: 86vh;
+    overflow-y: auto;
+  }
+}
+
+/* Responsive ajuste modal */
+@media (max-width: 640px) {
+  #view-section-modal .modal-content.modal-clean.modal-readable {
+    padding: 1.4rem 1.15rem 1.8rem;
+    border-radius: 1.35rem;
+  }
+  #view-section-modal .modal-content.modal-clean.modal-readable h3 {
+    font-size: 1.25rem;
+  }
+  #view-section-content .user-content-item {
+    padding: 0.85rem 0.9rem 0.9rem;
+  }
+}
+
+/* (Regla estructural antigua eliminada; se usa .modal-section-title) */
+@keyframes sectionTitleFadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(14px) scale(0.96);
+  }
+  55% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+@keyframes sectionBarGrow {
+  0% {
+    transform: scaleX(0);
+    opacity: 0;
+    transform-origin: center;
+  }
+  60% {
+    opacity: 1;
+  }
+  100% {
+    transform: scaleX(1);
+    opacity: 1;
+  }
+}
+
+/* Variante si quieres versión sólida sin gradiente (desactiva gradiente arriba) */
+/*
+#view-section-content > h3.solid-title {
+  background: none;
+  color: #13515a;
+  filter: none;
+}
+*/
+
+/* Utilidades */
+.fade-in {
+  animation: fadeIn 0.6s ease;
+}
+/* Keyframes fadeIn / fadeInUp eliminados para reducir animación general */
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--u-gradient-accent);
+  border-radius: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+}
+::-webkit-scrollbar-thumb:hover {
+  filter: brightness(1.1);
+}
+
+/* Accesibilidad movimiento reducido */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+  body::before,
+  body::after {
+    display: none;
+  }
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  header.card {
+    padding: 1.5rem 1.25rem 1.25rem;
+  }
+  #user-greeting {
+    font-size: 1.6rem;
+  }
+  [id^="user-sections-list-"] .card .p-4 {
+    min-height: 180px;
+  }
+}
+
+/* Glass reutilizable */
+.glass-panel {
+  background: linear-gradient(
+    145deg,
+    rgba(255, 255, 255, 0.68),
+    rgba(255, 255, 255, 0.38)
+  );
+  backdrop-filter: blur(22px) saturate(170%);
+  -webkit-backdrop-filter: blur(22px) saturate(170%);
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  border-radius: var(--u-radius-xl);
+  box-shadow: var(--u-shadow-1);
+  position: relative;
+}
+.glass-section {
+  background: linear-gradient(
+    155deg,
+    rgba(255, 255, 255, 0.78),
+    rgba(255, 255, 255, 0.55)
+  );
+  backdrop-filter: blur(18px) saturate(160%);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: var(--u-radius-lg);
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 8px 26px -10px rgba(7, 109, 100, 0.25);
+}
+
+/* Botones gris base usados en HTML */
+.bg-gray-500,
+.bg-gray-600 {
+  background: linear-gradient(135deg, #4b5563, #6b7280);
+  color: #fff;
+}
+.bg-gray-500:hover,
+.bg-gray-600:hover {
+  filter: brightness(1.08);
+  transform: translateY(-2px);
+}
