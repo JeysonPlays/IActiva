@@ -166,6 +166,7 @@ body.bg-alt-2 {
 .card {
   position: relative;
   width: 100%;
+  max-width: 360px; /* antes ocupaba todo; ahora más angosto */
   margin-inline: auto;
   background: linear-gradient(
     160deg,
@@ -325,16 +326,18 @@ form {
   color: var(--text-dim);
 }
 
+/* Inputs con fondo blanco sólido */
 .input-base {
   appearance: none;
-  border: 1px solid var(--border-color);
-  background: linear-gradient(145deg, #ffffff, #f1f5f9);
-  color: var(--text-color);
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  background: #ffffff;
+  color: #000000; /* texto negro solicitado */
   font: inherit;
   padding: 0.85rem 1.15rem 0.85rem 1rem;
   border-radius: var(--radius-md);
   line-height: 1.25;
-  box-shadow: var(--shadow-sm);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08),
+    0 0 0 1px rgba(255, 255, 255, 0.6) inset;
   transition: var(--transition-fast);
   outline: none;
   position: relative;
@@ -344,13 +347,13 @@ form {
   letter-spacing: 0.5px;
 }
 .input-base:hover {
-  background: linear-gradient(145deg, #ffffff, #e8edf4);
+  background: #ffffff;
   border-color: #94a3b8;
 }
 .input-base:focus {
   border-color: var(--brand-color);
-  box-shadow: var(--focus-ring);
-  background: linear-gradient(145deg, #ffffff, #e2e8f0);
+  box-shadow: var(--focus-ring), 0 2px 6px -1px rgba(0, 0, 0, 0.25);
+  background: #ffffff;
 }
 .input-base:disabled {
   opacity: 0.55;
@@ -380,36 +383,21 @@ form {
   box-shadow: var(--focus-ring);
 }
 
-.info-msg,
-.error-msg {
-  font-size: 0.8rem;
-  padding: 0.55rem 0.75rem;
-  border-radius: var(--radius-sm);
-  line-height: 1.25;
-  letter-spacing: 0.3px;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
 .info-msg {
-  color: #cbd5e1;
-  background: linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0.06),
-    rgba(255, 255, 255, 0.02)
-  );
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--text-dim); /* mantiene el mismo color del label */
+  background: none; /* sin fondo para quitar el cuadro */
+  border: none; /* sin borde */
+  letter-spacing: 0.3px;
+  display: inline; /* texto en línea normal */
 }
 .error-msg {
-  color: #fecdd3;
-  background: linear-gradient(
-    90deg,
-    rgba(244, 63, 94, 0.18),
-    rgba(244, 63, 94, 0.08)
-  );
-  border: 1px solid rgba(244, 63, 94, 0.35);
-  box-shadow: 0 0 0 1px rgba(244, 63, 94, 0.3),
-    0 4px 14px -4px rgba(244, 63, 94, 0.45);
+  color: #fca5a5; /* tono rojo claro para contraste sobre fondo */
+  background: none;
+  border: none;
+  box-shadow: none;
+  padding: 0; /* eliminamos espacio extra del cuadro */
+  font-weight: 600;
+  letter-spacing: 0.3px;
 }
 
 .divider {
@@ -458,22 +446,6 @@ form {
 .submit-btn:disabled {
   filter: grayscale(0.35) brightness(0.85);
   cursor: not-allowed;
-}
-
-.spinner {
-  --size: 22px;
-  width: var(--size);
-  height: var(--size);
-  border: 3px solid rgba(255, 255, 255, 0.35);
-  border-top-color: #fff;
-  border-radius: 50%;
-  animation: spin 900ms linear infinite;
-  display: inline-block;
-}
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
 }
 
 .footer-hint {

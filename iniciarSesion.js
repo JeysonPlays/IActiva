@@ -117,7 +117,7 @@ function Login() {
     React.createElement(
       "div",
       { className: "card" },
-      
+
       React.createElement(
         "h1",
         { className: "text-center text-2xl font-bold brand-title" },
@@ -205,9 +205,7 @@ function Login() {
         React.createElement(
           "button",
           { type: "submit", disabled, className: "submit-btn" },
-          submitting
-            ? React.createElement("span", { className: "spinner" })
-            : "Entrar"
+          submitting ? "Cargando..." : "Entrar"
         ),
         React.createElement(
           "div",
